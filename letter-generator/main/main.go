@@ -6,9 +6,10 @@ import (
 	"image/draw"
 	"os"
 	"image/gif"
-	"image/png"
 	"fmt"
 	"unicode"
+	"image/color/palette"
+	"github.com/ryan-berger/shia-birthday/letter-generator"
 )
 
 type generatorInfo struct {
@@ -35,35 +36,44 @@ func main()  {
 	shiaGif, _ := gif.DecodeAll(shiaFile)
 	shiaHeadGif, _ := gif.DecodeAll(shiaHeadFile)
 
-	generateLetter(&generatorInfo{
-		letter: A,
-		filler: shiaGif,
-		content: shiaHeadGif,
-	})
+	finishedChan := make(chan interface{}, 26)
+
+	for i := 0; i < 26 ; i++ {
+		generateLetter(&generatorInfo{
+			letter: letter_generator.Alphabet[i],
+			filler: shiaGif,
+			content: shiaHeadGif,
+		}, finishedChan)
+
+	}
+
+	for i := 0; i < 26; i++ {
+		select {
+			case <- finishedChan:
+				fmt.Print("finished")
+		}
+	}
 }
 
 
-func generateLetter(info *generatorInfo) {
+func generateLetter(info *generatorInfo, finished chan interface{}) {
 	trimmed := strings.Map(func(r rune) rune {
 		if unicode.IsSpace(r) {
 			return -1
 		}
 		return r
 	}, info.letter)
-	newImage := image.NewRGBA(image.Rect(0, 0, 640, 640))
 
-	fmt.Println(trimmed)
-
-	fmt.Println(len(info.filler.Image))
-	fmt.Println(len(info.content.Image))
+	letterGif := &gif.GIF{}
 
 	for i := 0; i < 60; i++ {
+		newImage := image.NewPaletted(image.Rect(0, 0, 640, 640), palette.Plan9)
+
+
 		for j := 0; j < 5; j++ {
 			for k := 0; k < 5; k++ {
 				adjustedIndex := (j * 5) + k
 				var selectedGif *image.Paletted
-
-				fmt.Println(string(rune(trimmed[adjustedIndex])))
 
 				if trimmed[adjustedIndex] == 72 {
 					selectedGif = info.filler.Image[i]
@@ -74,14 +84,8 @@ func generateLetter(info *generatorInfo) {
 				draw.Draw(newImage, image.Rect(k * 128, j * 128, (k* 128) + 128, (j * 128) + 128), selectedGif, image.ZP, draw.Over)
 			}
 		}
-		f, e := os.Create(fmt.Sprintf("a/%d.png", i))
-		if e != nil {
-			fmt.Println(e)
-		}
-		er := png.Encode(f, newImage)
-		if er != nil {
-			fmt.Println(er)
-		}
+
+		letterGif.Image = append(letterGif.Image, newImage)
 	}
 
 
