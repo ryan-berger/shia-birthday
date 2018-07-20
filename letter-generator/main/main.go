@@ -22,8 +22,17 @@ type generatorInfo struct {
 
 
 func main() {
-	shiaFile, _ := os.Open("images/shia.gif")
-	shiaHeadFile, _ := os.Open("images/shiaHead.gif")
+	shiaFile, e := os.Open("images/shia.gif")
+
+	if e != nil {
+		panic(e)
+	}
+
+	shiaHeadFile, e := os.Open("images/shiaHead.gif")
+
+	if e != nil {
+		panic(e)
+	}
 
 	defer shiaFile.Close()
 	defer shiaFile.Close()
