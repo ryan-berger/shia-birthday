@@ -57,6 +57,8 @@ func main() {
 		}
 	}
 
+	close(workerChannel)
+
 	waitGroup.Wait()
 }
 
