@@ -6,5 +6,5 @@ import (
 )
 
 func l(input string) {
-	fmt.Printf("%s: %s", time.Now().String(), input)
+	fmt.Printf("%s: %s \n", time.Now().String(), input)
 }
