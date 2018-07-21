@@ -16,19 +16,21 @@ type attachment struct {
 }
 
 type slackResponse struct {
-	Attachments []attachment `json:"attachments"`
+	ResponseType string       `json:"response_type"`
+	Attachments  []attachment `json:"attachments"`
 }
 
-func getSlackResponse(text string) *bytes.Reader{
+func getSlackResponse(text string) *bytes.Reader {
 	resp := slackResponse{
-		Attachments: []attachment {
+		ResponseType: "in_channel",
+		Attachments: []attachment{
 			{Text: text, ImageUrl: fmt.Sprintf("http://slack.ryanberger.me/gif/%s", text)},
 		},
 	}
 	response, _ := json.Marshal(&resp)
 
 	fmt.Println(string(response))
-	return 	bytes.NewReader(response)
+	return bytes.NewReader(response)
 }
 
 type WorkerPool struct {
