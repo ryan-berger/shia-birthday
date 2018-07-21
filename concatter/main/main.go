@@ -24,10 +24,10 @@ func main() {
 
 	r.HandleFunc("/gif/{name}", func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
-		fmt.Println(vars)
 		file, e := os.Open(fmt.Sprintf("gifs/%s.gif", vars["name"]))
 		if e != nil {
-			panic(e)
+			writer.WriteHeader(404)
+			return
 		}
 		request.Header.Set("Content-Type", "image/gif")
 		io.Copy(writer, file)

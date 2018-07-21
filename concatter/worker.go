@@ -50,11 +50,13 @@ func (w *Worker) work(info *frameInformation) {
 	defer w.group.Done()
 	newImage := image.NewPaletted(image.Rect(0, 0, len(work.letters)*80+20, 140), palette.Plan9)
 	drawBorder(newImage, work.index, len(work.letters)*5)
+	l("border drawn")
 	drawLines(newImage, work.index, len(work.letters)+1)
+	l("lines drawn")
 	for index, img := range work.letters {
 		draw.Draw(newImage, image.Rect((index*60)+(index*20)+20, 20, (index*60)+(index*20)+80, 120), img, image.ZP, draw.Over)
 	}
-
+	l("frame drawn")
 	info.finished <- &workResult{newImage, work.index}
 }
 
@@ -77,6 +79,7 @@ func (w *Worker) makeFrames(text string) chan *workResult {
 	result := make(chan *workResult, 60)
 
 	for i := 0; i < 60; i++ {
+		l("frame made")
 		w.group.Add(1)
 		r := &frame{
 			letters: cache.GetFrames(text, i),
@@ -109,6 +112,7 @@ func (w *Worker) listenForRequests() {
 	for {
 		select {
 		case request := <-w.textChan:
+			l("request recieved")
 			results := w.makeFrames(request.text)
 			w.group.Wait()
 			w.gifResult <- &gifResult{requestId: request.id, result: processFrames(results), text: request.text}
