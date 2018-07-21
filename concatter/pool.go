@@ -42,7 +42,6 @@ type WorkerPool struct {
 func (pool *WorkerPool) MakeRequest(text string, responseUrl string) {
 	id := uuid.NewUUID()
 	pool.httpRequests[id.String()] = responseUrl
-	l("request made")
 	pool.requests <- &gifRequest{
 		id:   id,
 		text: text,
@@ -53,7 +52,6 @@ func (pool *WorkerPool) dispatchCalls() {
 	for {
 		select {
 		case res := <-pool.results:
-			l("response received")
 			responseUrl := pool.httpRequests[res.requestId.String()]
 			f, _ := os.Create(fmt.Sprintf("gifs/%s.gif", res.text))
 			gif.EncodeAll(f, res.result)
