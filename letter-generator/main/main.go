@@ -35,7 +35,7 @@ func main() {
 	}
 
 	defer shiaFile.Close()
-	defer shiaFile.Close()
+	defer shiaHeadFile.Close()
 
 	shiaGif, _ := gif.DecodeAll(shiaFile)
 	shiaHeadGif, _ := gif.DecodeAll(shiaHeadFile)
@@ -43,7 +43,7 @@ func main() {
 	workerChannel := make(chan *generatorInfo)
 	waitGroup := &sync.WaitGroup{}
 
-	for i := 0; i < 10; i++ {
+	for i := 0; i < 20; i++ {
 		waitGroup.Add(1)
 		go generateLetter(workerChannel, waitGroup)
 	}
@@ -66,7 +66,7 @@ func generateLetter(work chan *generatorInfo, wg *sync.WaitGroup) {
 	letterGif := &gif.GIF{}
 
 	for i := 0; i < 60; i++ {
-		letterGif.Image = append(letterGif.Image, image.NewPaletted(image.Rect(0, 0, 640, 640), palette.Plan9))
+		letterGif.Image = append(letterGif.Image, image.NewPaletted(image.Rect(0, 0, 60, 100), palette.Plan9))
 		letterGif.Delay = append(letterGif.Delay, 0)
 	}
 
@@ -82,7 +82,7 @@ func generateLetter(work chan *generatorInfo, wg *sync.WaitGroup) {
 
 		for i := 0; i < 60; i++ {
 			for j := 0; j < 5; j++ {
-				for k := 0; k < 5; k++ {
+				for k := 1; k < 4; k++ {
 					adjustedIndex := (j * 5) + k
 					var selectedGif *image.Paletted
 					if rune(trimmed[adjustedIndex]) == rune('-') {
@@ -91,7 +91,7 @@ func generateLetter(work chan *generatorInfo, wg *sync.WaitGroup) {
 						selectedGif = info.content.Image[i]
 					}
 
-					draw.Draw(letterGif.Image[i], image.Rect(k*128, j*128, (k*128)+128, (j*128)+128), selectedGif, image.ZP, draw.Over)
+					draw.Draw(letterGif.Image[i], image.Rect((k - 1)*20, j*20, ((k - 1) *20)+20, (j*20)+20), selectedGif, image.ZP, draw.Over)
 				}
 			}
 			fmt.Println(fmt.Sprintf("letter: %d cycle: %d", info.index, i))

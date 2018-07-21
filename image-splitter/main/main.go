@@ -17,15 +17,14 @@ func main() {
 
 	defer shiaFile.Close()
 	defer shiaHeadFile.Close()
-	//fmt.Println(SplitAnimatedGIF(shiaHeadFile))
-
+	SplitAnimatedGIF(shiaFile, "shia")
+	SplitAnimatedGIF(shiaHeadFile, "shiaHead")
 	joinGif("shia", 15)
 	joinGif("shiaHead", 12)
 }
 
 func joinGif(directory string, numberFrames int)  {
 	outGif := &gif.GIF{}
-	fmt.Println()
 	for j := 0; j < (60 / numberFrames); j++ {
 		for i := 0; i < numberFrames; i++ {
 			f, _ := os.Open(fmt.Sprintf("%s/%d.png", directory, i))
@@ -45,13 +44,10 @@ func joinGif(directory string, numberFrames int)  {
 
 	newFile, _ := os.Create(directory + ".gif")
 	defer newFile.Close()
-
-	fmt.Println(len(outGif.Image))
-
 	gif.EncodeAll(newFile, outGif)
 }
 
-func SplitAnimatedGIF(reader io.Reader) (err error) {
+func SplitAnimatedGIF(reader io.Reader, base string) (err error) {
 	defer func() {
 		if r := recover(); r != nil {
 			err = fmt.Errorf("Error while decoding: %s", r)
@@ -73,7 +69,7 @@ func SplitAnimatedGIF(reader io.Reader) (err error) {
 		draw.Draw(overpaintImage, overpaintImage.Bounds(), srcImg, image.ZP, draw.Over)
 
 		// save current frame "stack". This will overwrite an existing file with that name
-		file, err := os.Create(fmt.Sprintf("%s%d%s", "shiaHead/", i, ".png"))
+		file, err := os.Create(fmt.Sprintf("%s/%d%s", base, i, ".png"))
 		if err != nil {
 			return err
 		}
