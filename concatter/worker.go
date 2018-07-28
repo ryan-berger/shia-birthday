@@ -91,7 +91,7 @@ func (w *Worker) makeFrames(text string) chan *workResult {
 
 func processFrames(results chan *workResult) *gif.GIF {
 	close(results)
-	images := [60]*image.Paletted{}
+	images := [10]*image.Paletted{}
 
 	for res := range results {
 		images[res.index] = res.frame
