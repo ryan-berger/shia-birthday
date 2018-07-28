@@ -58,7 +58,7 @@ func (pool *WorkerPool) dispatchCalls() {
 			if e != nil {
 				fmt.Println(e)
 			}
-
+			fmt.Println(res)
 			gif.EncodeAll(f, res.result)
 
 			http.Post(responseUrl, "application/json", getSlackResponse(res.text))
