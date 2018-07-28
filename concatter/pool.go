@@ -53,7 +53,12 @@ func (pool *WorkerPool) dispatchCalls() {
 		select {
 		case res := <-pool.results:
 			responseUrl := pool.httpRequests[res.requestId.String()]
-			f, _ := os.Create(fmt.Sprintf("gifs/%s.gif", res.text))
+			f, e := os.Create(fmt.Sprintf("gifs/%s.gif", res.text))
+
+			if e != nil {
+				fmt.Println(e)
+			}
+
 			gif.EncodeAll(f, res.result)
 
 			http.Post(responseUrl, "application/json", getSlackResponse(res.text))
