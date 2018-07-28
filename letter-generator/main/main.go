@@ -11,6 +11,7 @@ import (
 	"image/color/palette"
 	"github.com/ryan-berger/shia-birthday/letter-generator"
 	"sync"
+	"image/color"
 )
 
 type generatorInfo struct {
@@ -22,13 +23,13 @@ type generatorInfo struct {
 
 
 func main() {
-	shiaFile, e := os.Open("images/shia.gif")
+	shiaFile, e := os.Open("images/gentlemanparrot.gif")
 
 	if e != nil {
 		panic(e)
 	}
 
-	shiaHeadFile, e := os.Open("images/shiaHead.gif")
+	shiaHeadFile, e := os.Open("images/jediparrot.gif")
 
 	if e != nil {
 		panic(e)
@@ -63,16 +64,15 @@ func main() {
 }
 
 func generateLetter(work chan *generatorInfo, wg *sync.WaitGroup) {
-	letterGif := &gif.GIF{}
-
-	for i := 0; i < 60; i++ {
-		letterGif.Image = append(letterGif.Image, image.NewPaletted(image.Rect(0, 0, 60, 100), palette.Plan9))
-		letterGif.Delay = append(letterGif.Delay, 0)
-	}
-
-
 	defer wg.Done()
 	for info := range work {
+		letterGif := &gif.GIF{}
+
+		for i := 0; i < 10; i++ {
+			letterGif.Image = append(letterGif.Image, image.NewPaletted(image.Rect(0, 0, 60, 100), palette.Plan9))
+			letterGif.Delay = append(letterGif.Delay, 0)
+		}
+
 		trimmed := strings.Map(func(r rune) rune {
 			if unicode.IsSpace(r) {
 				return -1
@@ -80,17 +80,17 @@ func generateLetter(work chan *generatorInfo, wg *sync.WaitGroup) {
 			return r
 		}, info.letter)
 
-		for i := 0; i < 60; i++ {
+		for i := 0; i < 10; i++ {
+			draw.Draw(letterGif.Image[i], letterGif.Image[i].Bounds(), &image.Uniform{color.RGBA{255, 255, 255 , 0}}, image.ZP, draw.Over)
 			for j := 0; j < 5; j++ {
 				for k := 1; k < 4; k++ {
 					adjustedIndex := (j * 5) + k
 					var selectedGif *image.Paletted
 					if rune(trimmed[adjustedIndex]) == rune('-') {
 						selectedGif = info.filler.Image[i]
-					} else {
+					} else if rune(trimmed[adjustedIndex]) == rune('0') {
 						selectedGif = info.content.Image[i]
 					}
-
 					draw.Draw(letterGif.Image[i], image.Rect((k - 1)*20, j*20, ((k - 1) *20)+20, (j*20)+20), selectedGif, image.ZP, draw.Over)
 				}
 			}

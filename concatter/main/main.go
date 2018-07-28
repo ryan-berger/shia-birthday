@@ -25,6 +25,9 @@ func main() {
 	r.HandleFunc("/gif/{name}", func(writer http.ResponseWriter, request *http.Request) {
 		vars := mux.Vars(request)
 		file, e := os.Open(fmt.Sprintf("gifs/%s.gif", vars["name"]))
+
+
+
 		if e != nil {
 			writer.WriteHeader(404)
 			return

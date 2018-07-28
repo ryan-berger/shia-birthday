@@ -46,14 +46,15 @@ type Worker struct {
 }
 
 func (w *Worker) work(info *frameInformation) {
-	work := info.frame
 	defer w.group.Done()
+	work := info.frame
 	newImage := image.NewPaletted(image.Rect(0, 0, len(work.letters)*80+20, 140), palette.Plan9)
 	drawBorder(newImage, work.index, len(work.letters)*5)
 	drawLines(newImage, work.index, len(work.letters)+1)
 	for index, img := range work.letters {
 		draw.Draw(newImage, image.Rect((index*60)+(index*20)+20, 20, (index*60)+(index*20)+80, 120), img, image.ZP, draw.Over)
 	}
+
 	info.finished <- &workResult{newImage, work.index}
 }
 
