@@ -9,7 +9,7 @@ import (
 	"github.com/pborman/uuid"
 )
 
-var cache = NewGifCache("letter-generator/letters", "images/shia.gif")
+var cache = NewGifCache("letter-generator/letters", "images/gentlemanparrot.gif")
 
 type frame struct {
 	letters []*image.Paletted
