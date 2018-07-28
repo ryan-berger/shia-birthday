@@ -68,15 +68,15 @@ func (w *Worker) listenForWork() {
 }
 
 func (w *Worker) spinUpWorkers() {
-	for i := 0; i < 60; i++ {
+	for i := 0; i < 10; i++ {
 		go w.listenForWork()
 	}
 }
 
 func (w *Worker) makeFrames(text string) chan *workResult {
-	result := make(chan *workResult, 60)
+	result := make(chan *workResult, 10)
 
-	for i := 0; i < 60; i++ {
+	for i := 0; i < 10; i++ {
 		w.group.Add(1)
 		r := &frame{
 			letters: cache.GetFrames(text, i),
