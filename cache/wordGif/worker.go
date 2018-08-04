@@ -1,4 +1,4 @@
-package concatter
+package wordGif
 
 import (
 	"image"
@@ -7,9 +7,13 @@ import (
 	"image/draw"
 	"image/gif"
 	"github.com/pborman/uuid"
+	"github.com/ryan-berger/shia-birthday/cache/letter"
 )
 
-var cache = NewGifCache("letter-generator/letters", "images/gentlemanparrot.gif")
+type Filler interface {
+	GetFiller(frame int) *image.Paletted
+	GetContent(frame int) *image.Paletted
+}
 
 type frame struct {
 	letters []*image.Paletted
@@ -39,10 +43,11 @@ type gifResult struct {
 }
 
 type Worker struct {
-	textChan  chan *gifRequest
-	workQueue chan *frameInformation
-	gifResult chan *gifResult
-	group     *sync.WaitGroup
+	textChan    chan *gifRequest
+	workQueue   chan *frameInformation
+	gifResult   chan *gifResult
+	letterCache *letter.Cache
+	group       *sync.WaitGroup
 }
 
 func (w *Worker) work(info *frameInformation) {
@@ -79,7 +84,7 @@ func (w *Worker) makeFrames(text string) chan *workResult {
 	for i := 0; i < 10; i++ {
 		w.group.Add(1)
 		r := &frame{
-			letters: cache.GetFrames(text, i),
+			letters: w.letterCache.GetLettersAt(text, i),
 			index:   i,
 		}
 

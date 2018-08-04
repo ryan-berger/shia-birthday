@@ -1,4 +1,4 @@
-package concatter
+package wordGif
 
 import (
 	"net/http"
