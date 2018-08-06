@@ -1,14 +1,12 @@
 package wordGif
 
 import (
-	"net/http"
-	"image/gif"
-	"github.com/pborman/uuid"
-	"os"
-	"fmt"
+			"github.com/pborman/uuid"
+		"fmt"
 	"encoding/json"
 	"bytes"
-)
+		"image/gif"
+	)
 
 type attachment struct {
 	Text     string `json:"text"`
@@ -36,12 +34,12 @@ type WorkerPool struct {
 	requests     chan *gifRequest
 	results      chan *gifResult
 	workers      []*Worker
-	httpRequests map[string]string
+	resultChan map[string]chan *gif.GIF
 }
 
-func (pool *WorkerPool) MakeRequest(text string, responseUrl string) {
+func (pool *WorkerPool) MakeRequest(text string, resultChan chan *gif.GIF) {
 	id := uuid.NewUUID()
-	pool.httpRequests[id.String()] = responseUrl
+	pool.resultChan[id.String()] = resultChan
 	pool.requests <- &gifRequest{
 		id:   id,
 		text: text,
@@ -52,15 +50,7 @@ func (pool *WorkerPool) dispatchCalls() {
 	for {
 		select {
 		case res := <-pool.results:
-			responseUrl := pool.httpRequests[res.requestId.String()]
-			f, e := os.Create(fmt.Sprintf("gifs/%s.gif", res.text))
-
-			if e != nil {
-				fmt.Println(e)
-			}
-			gif.EncodeAll(f, res.result)
-
-			http.Post(responseUrl, "application/json", getSlackResponse(res.text))
+			pool.resultChan[res.requestId.String()] <- res.result
 		}
 	}
 }
@@ -69,13 +59,13 @@ func NewWorkerPool() *WorkerPool {
 	pool := &WorkerPool{
 		requests:     make(chan *gifRequest),
 		results:      make(chan *gifResult),
-		httpRequests: map[string]string{},
+		resultChan : map[string] chan *gif.GIF {},
 	}
 
 	for i := 0; i < 2; i++ {
 		pool.workers = append(pool.workers, NewWorker(pool.requests, pool.results))
 	}
 
-	go pool.dispatchCalls()
+	//go pool.dispatchCalls()
 	return pool
 }
