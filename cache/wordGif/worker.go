@@ -48,14 +48,15 @@ type Worker struct {
 	gifResult   chan *gifResult
 	letterCache *letter.Cache
 	group       *sync.WaitGroup
+	filler      Filler
 }
 
 func (w *Worker) work(info *frameInformation) {
 	defer w.group.Done()
 	work := info.frame
 	newImage := image.NewPaletted(image.Rect(0, 0, len(work.letters)*80+20, 140), palette.Plan9)
-	drawBorder(newImage, work.index, len(work.letters)*5)
-	drawLines(newImage, work.index, len(work.letters)+1)
+	drawBorder(w.filler, newImage, work.index, len(work.letters)*5)
+	drawLines(w.filler, newImage, work.index, len(work.letters)+1)
 	for index, img := range work.letters {
 		draw.Draw(newImage, image.Rect((index*60)+(index*20)+20, 20, (index*60)+(index*20)+80, 120), img, image.ZP, draw.Over)
 	}
@@ -133,7 +134,7 @@ func NewWorker(textChan chan *gifRequest, gifResult chan *gifResult) *Worker {
 	return worker
 }
 
-func drawBorder(img *image.Paletted, frame, length int) {
+func drawBorder(cache Filler, img *image.Paletted, frame, length int) {
 	filler := cache.GetFiller(frame)
 	for i := 0; i < length; i++ {
 		draw.Draw(img, image.Rect(i*20, 0, (i*20)+20, 20), filler, image.ZP, draw.Over)
@@ -141,7 +142,7 @@ func drawBorder(img *image.Paletted, frame, length int) {
 	}
 }
 
-func drawLines(img *image.Paletted, frame, length int) {
+func drawLines(cache Filler, img *image.Paletted, frame, length int) {
 	filler := cache.GetFiller(frame)
 	for i := 0; i < length; i++ {
 		for j := 0; j < 5; j++ {
